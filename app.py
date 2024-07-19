@@ -11,7 +11,7 @@ st.write("# Credit Card Fraud Detection")
 st.sidebar.header('Input Credit Card Details')
 
 # Upload CSV file
-uploaded_file = st.sidebar.file_uploader("Upload your CSV file", type=['csv'])
+uploaded_file = st.sidebar.file_uploader("Upload your input CSV file", type=['csv'])
 
 # Example CSV file download
 example_csv = pd.DataFrame({
@@ -56,48 +56,53 @@ if uploaded_file is not None:
 
     if st.sidebar.button("Predict") and load_clf:
         try:
-            # Make predictions
-            predictions = load_clf.predict(filtered_df)
-            prediction_probabilities = load_clf.predict_proba(filtered_df)
+            # Data Preprocessing
+            # Remove rows with NaN or infinity
+            filtered_df = filtered_df.replace([np.inf, -np.inf], np.nan).dropna()
 
-            # Display detailed results
-            st.subheader('Detailed Results')
-            results_df = filtered_df.copy()
-            results_df['Prediction'] = predictions
-            results_df['Prediction Probability'] = prediction_probabilities[:, 1]  # Probability of being fraudulent
-            st.write(results_df)
+            # Ensure all values are finite
+            if filtered_df.empty:
+                st.write("No valid data available for prediction.")
+            else:
+                # Make predictions
+                predictions = load_clf.predict(filtered_df)
+                prediction_probabilities = load_clf.predict_proba(filtered_df)
 
-            # # Visualize prediction results
-            # st.subheader('Prediction Visualization')
-            # fig, ax = plt.subplots(figsize=(8, 6))
-            # sns.countplot(x='Prediction', data=results_df, palette='viridis', ax=ax)
-            # ax.set_xlabel('Prediction')
-            # ax.set_ylabel('Count')
-            # ax.set_title('Predicted Transactions')
-            # st.pyplot(fig)
+                # Display detailed results
+                st.subheader('Detailed Results')
+                results_df = filtered_df.copy()
+                results_df['Prediction'] = predictions
+                results_df['Prediction Probability'] = prediction_probabilities[:, 1]  # Probability of being fraudulent
+                results_df['Is_Fraudulent'] = results_df['Prediction'].apply(lambda x: 'Fraudulent' if x == 1 else 'Normal')
+                st.write(results_df)
 
-            # Calculate counts of each prediction
-            prediction_counts = results_df['Prediction'].value_counts()
+                # Visualize prediction results
+                prediction_counts = results_df['Prediction'].value_counts()
+                fig, ax = plt.subplots(figsize=(8, 6))
+                ax.pie(prediction_counts, labels=prediction_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette('viridis'))
+                ax.set_title('Predicted Transactions')
+                st.pyplot(fig)
 
-            # Plotting a pie chart
-            fig, ax = plt.subplots(figsize=(8, 6))
-            ax.pie(prediction_counts, labels=prediction_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette('viridis'))
-            ax.set_title('Predicted Transactions')
-            st.pyplot(fig)
+                # Display predictions
+                st.subheader('Prediction Summary')
+                st.write(f'Normal Transactions: {np.sum(predictions == 0)}')
+                st.write(f'Fraudulent Transactions: {np.sum(predictions == 1)}')
 
-            # Display predictions
-            st.subheader('Prediction Summary')
-            st.write(f'Normal Transactions: {np.sum(predictions == 0)}')
-            st.write(f'Fraudulent Transactions: {np.sum(predictions == 1)}')
+                # Highlight fraudulent transactions in the CSV
+                def highlight_fraudulent(row):
+                    return ['background-color: yellow' if val == 'Fraudulent' else '' for val in row]
 
-            # Download button for detailed results
-            csv = results_df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Download Detailed Results as CSV",
-                data=csv,
-                file_name='detailed_results.csv',
-                mime='text/csv',
-            )
+                styled_df = results_df.style.apply(highlight_fraudulent, subset=['Is_Fraudulent'])
+
+                # Convert filtered DataFrame to CSV
+                csv = results_df.to_csv(index=False).encode('utf-8')
+                
+                st.download_button(
+                    label="Download Detailed Results as CSV",
+                    data=csv,
+                    file_name='detailed_results.csv',
+                    mime='text/csv',
+                )
 
         except Exception as e:
             st.write("Error making predictions:", e)
@@ -110,7 +115,7 @@ else:
 # Additional instructions and notes
 st.sidebar.subheader('Instructions')
 st.sidebar.markdown("""
-1. Upload your CSV file using the sidebar.
+1. Upload your CSV(it should have 29 features) file using the sidebar.
 2. Adjust the sliders to filter transactions based on amount.
 3. Click on the **Predict** button to see the fraud prediction results.
 4. Download the detailed results using the provided buttons.
