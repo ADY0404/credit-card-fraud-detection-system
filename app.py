@@ -35,7 +35,7 @@ def user_input():
 
 # Load the pre-trained model
 try:
-    load_clf = joblib.load('Savedmodel/credit_fraud_model')
+    load_clf = joblib.load('SavedModel/credit_fraud_model')
 except Exception as e:
     st.write("Error loading the model:", e)
     load_clf = None
