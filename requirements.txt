@@ -1,7 +1,8 @@
-﻿altair==5.0.1
+altair==5.0.1
 annotated-types==0.5.0
 anyio==3.7.1
 attrs==23.2.0
+backports.zoneinfo==0.2.1
 blinker==1.6.3
 cachetools==5.3.3
 certifi==2024.2.2
@@ -27,7 +28,7 @@ markdown-it-py==2.2.0
 MarkupSafe==2.1.5
 matplotlib==3.5.3
 mdurl==0.1.2
-numpy
+numpy==1.21.6
 packaging==23.2
 pandas==1.3.5
 Pillow==9.5.0
@@ -46,9 +47,9 @@ pytz==2024.1
 pytz-deprecation-shim==0.1.0.post0
 requests==2.31.0
 rich==13.7.1
-seaborn==0.11.2
-scikit-learn
-scipy
+seaborn
+scikit-learn==1.0.2
+scipy==1.7.3
 six==1.16.0
 smmap==5.0.1
 sniffio==1.3.1
